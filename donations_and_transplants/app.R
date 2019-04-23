@@ -37,7 +37,7 @@ ui <- fluidPage(theme = shinytheme("slate"),
                    label = "Country",
                    choices = countries,
                    selected = "AU",
-                   multiple = FALSE
+                   multiple = TRUE
                  ),
                  selectInput(
                    inputId = "organ",
@@ -70,7 +70,7 @@ server <- function(input, output) {
       filter(organ == input$organ) %>% 
       filter(measure == input$measure) %>% 
       filter(country == input$country) %>% 
-      ggplot(aes(x = year, y = transplants)) +
+      ggplot(aes(x = year, y = transplants, color = country)) +
       geom_point() +
       labs(
         x = "Year",
