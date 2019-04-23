@@ -7,12 +7,18 @@
 #    http://shiny.rstudio.com/
 #
 
+library(shiny)
+library(shinythemes)
+library(tools)
+library(stringr)
+library(ggplot2)
+library(ggthemes)
 library(tidyverse)
 
 source("data_helper.R")
 
 # Define UI
-ui <- fluidPage(
+ui <- fluidPage(theme = shinytheme("slate"),
   # Application title
   titlePanel("Organ Donations and Transplants"),
   
@@ -65,8 +71,18 @@ server <- function(input, output) {
       filter(measure == input$measure) %>% 
       filter(country == input$country) %>% 
       ggplot(aes(x = year, y = transplants)) +
-      geom_point()
+      geom_point() +
+      labs(
+        x = "Year",
+        y = paste("Transplants (", input$measure, ")", sep = ""),
+        title = paste(toTitleCase(input$organ),
+                      " Donation Trends in ",
+                      toupper(input$country),
+                      sep = ""),
+        caption = "Source: IRODaT Free Database") +
+      theme_grey()
   })
+  
 }
 
 # Run the application 
