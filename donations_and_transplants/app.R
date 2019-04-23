@@ -7,45 +7,65 @@
 #    http://shiny.rstudio.com/
 #
 
-library(shiny)
+library(tidyverse)
+
+source("data_helper.R")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
-   
-   # Application title
-   titlePanel("Organ Donations and Transplants"),
-   helpText("Shafi Rubbani\nGOV 1005 Final Project, Spring 2019"),
-   
-   # Sidebar with a slider input for number of bins 
-   sidebarLayout(
-      sidebarPanel(
-         sliderInput("bins",
-                     "Number of bins:",
-                     min = 1,
-                     max = 50,
-                     value = 30)
-      ),
-      
-      # Show a plot of the generated distribution
-      mainPanel(
-         plotOutput("distPlot")
+  
+  # Application title
+  titlePanel("Organ Donations and Transplants"),
+  helpText("A Gov 1005 Final Project by Shafi Rubbani, Spring 2019"),
+  
+  # Sidebar with a slider input for number of bins 
+  sidebarLayout(
+    sidebarPanel(
+      selectInput(inputId = "country",
+                  label = "Country",
+                  choices = countries,
+                  selected = "AU",
+                  multiple = FALSE),
+      selectInput(inputId = "organ",
+                  label = "Organ",
+                  choices = organs,
+                  selected = "kidney",
+                  multiple = FALSE),
+      selectInput(inputId = "measure",
+                  label = "Measure",
+                  choices = c(
+                    "Number" = "num",
+                    "Per Million People" = "pmp"
+                  ),
+                  selected = "num",
+                  multiple = FALSE)
+    ),
+    
+    # Show a plot of the generated distribution
+    mainPanel(
+      tabsetPanel(type = "tabs",
+                  tabPanel("Plot", 
+                           plotOutput("donationsPlot")),
+                  tabPanel("Summary"),
+                  tabPanel("About")
       )
-   )
+    )
+  )
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-   
-   output$distPlot <- renderPlot({
-      # generate bins based on input$bins from ui.R
-      x    <- faithful[, 2] 
-      bins <- seq(min(x), max(x), length.out = input$bins + 1)
-      
-      # draw the histogram with the specified number of bins
-      hist(x, breaks = bins, col = 'darkgray', border = 'white')
-   })
+  
+  output$donationsPlot <- renderPlot({
+    all_transplants %>% 
+      filter(!is.na(transplants)) %>% 
+      filter(organ == input$organ) %>% 
+      filter(measure == input$measure) %>% 
+      filter(country == input$country) %>% 
+      ggplot(aes(x = year, y = transplants)) +
+      geom_point()
+  })
 }
 
 # Run the application 
 shinyApp(ui = ui, server = server)
-
