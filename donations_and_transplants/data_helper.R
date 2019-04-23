@@ -21,7 +21,7 @@ raw_transplants <- map_dfr(file_list,
                                          "donor_status"),
                            col_types = cols(
                              country = col_character(),
-                             year = col_double(),
+                             year = col_integer(),
                              organ = col_character(),
                              transplants = col_character(),
                              measure = col_character(),
@@ -29,6 +29,10 @@ raw_transplants <- map_dfr(file_list,
                            ))
 
 all_transplants <- raw_transplants %>% 
+  
+  # Fixed duplication bug
+  
+  distinct() %>% 
   filter(!transplants %in% c("0", "-")) %>% 
   mutate(transplants = parse_double(transplants)) %>% 
   group_by(country, year, organ, measure) %>% 

@@ -80,7 +80,7 @@ server <- function(input, output) {
                       toupper(input$country),
                       sep = ""),
         caption = "Source: IRODaT Free Database") +
-      theme_grey()
+      theme_economist()
   })
   
 }
