@@ -36,7 +36,7 @@ ui <- fluidPage(theme = shinytheme("slate"),
                    inputId = "country",
                    label = "Country",
                    choices = countries,
-                   selected = "AU",
+                   selected = "US",
                    multiple = TRUE
                  ),
                  selectInput(
@@ -65,6 +65,8 @@ ui <- fluidPage(theme = shinytheme("slate"),
 server <- function(input, output) {
   
   output$donationsPlot <- renderPlot({
+    req(input$country)
+    
     all_transplants %>% 
       filter(!is.na(transplants)) %>% 
       filter(organ == input$organ) %>% 
@@ -75,9 +77,12 @@ server <- function(input, output) {
       labs(
         x = "Year",
         y = paste("Transplants (", input$measure, ")", sep = ""),
+        #title = (length(input$country) == 1),
+        color = "Country",
         title = paste(toTitleCase(input$organ),
-                      " Donation Trends in ",
-                      toupper(input$country),
+                      " Transplant Trends in ",
+                      if(length(input$country) == 1) {toupper(input$country)}
+                      else {"Different Countries"},
                       sep = ""),
         caption = "Source: IRODaT Free Database") +
       theme_economist()
