@@ -37,6 +37,45 @@ ui <- fluidPage(theme = shinytheme("slate"),
   tabsetPanel(
     type = "tabs",
     tabPanel("Summary", "Taco"),
+    tabPanel("Donation Rates Across Countries",
+             
+             # Sidebar with inputs for plot
+             
+             sidebarLayout(
+               
+               # Display transplants plot
+               
+               mainPanel(plotOutput("donationsPlot")),
+               
+               # Inputs: country or countries, organ, and measure (absolute number vs. per million people)
+               
+               sidebarPanel(
+                 selectInput(
+                   inputId = "country1",
+                   label = "Country",
+                   choices = countries,
+                   selected = "US",
+                   multiple = TRUE
+                 ),
+                 selectInput(
+                   inputId = "type",
+                   label = "Type",
+                   choices = c("Actual" = "actual",
+                               "Utilized" = "utilized",
+                               "Living" = "living"),
+                   selected = "actual",
+                   multiple = FALSE
+                 ),
+                 selectInput(
+                   inputId = "measure1",
+                   label = "Measure",
+                   choices = c("Number" = "num",
+                               "Per Million People" = "pmp"),
+                   selected = "num",
+                   multiple = FALSE
+                 )
+               )
+             )),
     tabPanel("Transplant Rates Across Countries",
              
              # Sidebar with inputs for plot
@@ -51,7 +90,7 @@ ui <- fluidPage(theme = shinytheme("slate"),
                
                sidebarPanel(
                  selectInput(
-                   inputId = "country",
+                   inputId = "country2",
                    label = "Country",
                    choices = countries,
                    selected = "US",
@@ -65,7 +104,7 @@ ui <- fluidPage(theme = shinytheme("slate"),
                    multiple = FALSE
                  ),
                  selectInput(
-                   inputId = "measure",
+                   inputId = "measure2",
                    label = "Measure",
                    choices = c("Number" = "num",
                                "Per Million People" = "pmp"),
@@ -85,7 +124,7 @@ ui <- fluidPage(theme = shinytheme("slate"),
                mainPanel(gt_output("transplantsTable")),
                sidebarPanel(
                  selectInput(
-                   inputId = "country",
+                   inputId = "country3",
                    label = "Country",
                    choices = countries,
                    selected = "US",
@@ -100,14 +139,36 @@ ui <- fluidPage(theme = shinytheme("slate"),
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   
+  output$donationsPlot <- renderPlot({
+    req(input$country1)
+    
+    all_donations %>% 
+      filter(!is.na(donations)) %>% 
+      filter(measure == input$measure1) %>% 
+      filter(type == input$type) %>% 
+      filter(country %in% input$country1) %>% 
+      ggplot(aes(x = year, y = donations, color = country)) +
+      geom_point() +
+      labs(
+        x = "Year",
+        y = paste("Donations (", input$measure1, ")", sep = ""),
+        color = "Country",
+        title = paste("Organ Donation Trends in ",
+                      if(length(input$country) == 1) {toupper(input$country)}
+                      else {"Different Countries"},
+                      sep = ""),
+        caption = "Source: IRODaT Free Database") +
+      theme_economist()
+  })
+  
   output$transplantsPlot <- renderPlot({
-    req(input$country)
+    req(input$country2)
     
     all_transplants %>% 
       filter(!is.na(transplants)) %>% 
       filter(organ == input$organ) %>% 
-      filter(measure == input$measure) %>% 
-      filter(country == input$country) %>% 
+      filter(measure == input$measure2) %>% 
+      filter(country %in% input$country2) %>% 
       ggplot(aes(x = year, y = transplants, color = country)) +
       geom_point() +
       labs(
@@ -116,7 +177,7 @@ server <- function(input, output) {
         color = "Country",
         title = paste(toTitleCase(input$organ),
                       " Transplant Trends in ",
-                      if(length(input$country) == 1) {toupper(input$country)}
+                      if(length(input$country2) == 1) {toupper(input$country2)}
                       else {"Different Countries"},
                       sep = ""),
         caption = "Source: IRODaT Free Database") +
@@ -124,10 +185,10 @@ server <- function(input, output) {
   })
   
   output$transplantsTable <- render_gt({
-    req(input$country)
+    req(input$country3)
     
     transplant_table <- all_transplants %>% 
-      filter(country == "US") %>% 
+      filter(country == input$country3) %>% 
       filter(measure == "num") %>% 
       spread(key = organ, value = transplants)
     
@@ -145,7 +206,7 @@ server <- function(input, output) {
       arrange(desc(year)) %>% 
       gt() %>% 
       #Set title
-      tab_header(title = paste("Transplant Proportions in ", input$country)) %>% 
+      tab_header(title = paste("Transplant Proportions in ", input$country3)) %>% 
       #Label columns
       cols_label(
         year = "Year",

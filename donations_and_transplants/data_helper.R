@@ -1,14 +1,12 @@
+# Install relevant libraries
+
 library(fs)
 library(janitor)
 library(tidyverse)
 
-# Works in the helper script
-
-# file_list <- dir_ls("../transplant_data")
-
 # Read donation data and transplant data from CSVs in dedicated folder
 
-donation_list <- dir_ls("../donation_data")
+donation_list <- dir_ls("./donation_data")
 
 transplant_list <- dir_ls("./transplant_data")
 
@@ -49,6 +47,22 @@ raw_transplants <- map_dfr(transplant_list,
                              measure = col_character(),
                              donor_status = col_character()
                            ))
+
+all_donations <- raw_donations %>% 
+  
+  # Fixed duplication bug
+  
+  distinct() %>% 
+  
+  # I strived to filter out all missing or irrelevant. I decided that it was
+  # unlikely in general that a country would have 0 donations/transplants, and I
+  # decided to treat those values as missing data.
+  
+  filter(!donations %in% c("0", "-")) %>% 
+  
+  # Parsed doubles as doubles
+  
+  mutate(donations = parse_double(donations))
 
 all_transplants <- raw_transplants %>% 
   
