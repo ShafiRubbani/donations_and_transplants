@@ -7,30 +7,48 @@
 #    http://shiny.rstudio.com/
 #
 
+# Download relevant library
+
 library(shiny)
 library(shinythemes)
 library(tools)
 library(stringr)
 library(ggplot2)
 library(ggthemes)
+library(gt)
 library(tidyverse)
+
+# Source helper file
 
 source("data_helper.R")
 
-# Define UI
+# Define UI with dark theme
+
 ui <- fluidPage(theme = shinytheme("slate"),
+                
   # Application title
+  
   titlePanel("Organ Donations and Transplants"),
   
   helpText("A Gov 1005 Final Project by Shafi Rubbani, Spring 2019"),
   
   # Tabs contain different page layout
+  
   tabsetPanel(
     type = "tabs",
+    tabPanel("Summary", "Taco"),
     tabPanel("Transplant Rates Across Countries",
+             
              # Sidebar with inputs for plot
+             
              sidebarLayout(
+               
+               # Display transplants plot
+               
                mainPanel(plotOutput("transplantsPlot")),
+               
+               # Inputs: country or countries, organ, and measure (absolute number vs. per million people)
+               
                sidebarPanel(
                  selectInput(
                    inputId = "country",
@@ -57,8 +75,13 @@ ui <- fluidPage(theme = shinytheme("slate"),
                )
              )),
     tabPanel("Transplant Proportions",
+             
              # Sidebar with inputs for plot
+             
              sidebarLayout(
+               
+               # Display transplants table
+               
                mainPanel(gt_output("transplantsTable")),
                sidebarPanel(
                  selectInput(
@@ -70,7 +93,6 @@ ui <- fluidPage(theme = shinytheme("slate"),
                  )
                )
              )),
-    tabPanel("Summary", "Taco"),
     tabPanel("About", "Tuesday")
   )
 )
@@ -133,13 +155,23 @@ server <- function(input, output) {
         lung = "Lung",
         pancreas = "Pancreas"
       ) %>%
+      tab_source_note("Source: IRODaT Free Database") %>% 
       #Format proportions as percentages
       fmt_percent(columns = vars(heart,
                                  kidney,
                                  liver,
                                  lung,
                                  pancreas),
-                  decimals = 0)
+                  decimals = 0) %>% 
+      tab_options(
+        table.background.color = "#D5E5EB"
+      )
+  })
+  
+  output$about <- renderUI({
+    
+    ###
+    
   })
   
 }
