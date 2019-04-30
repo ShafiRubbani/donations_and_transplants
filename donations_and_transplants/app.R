@@ -144,7 +144,7 @@ ui <- fluidPage(theme = shinytheme("slate"),
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   
-  output$top10donations <- renderTable({
+  output$top10donations <- render_gt({
     all_donations %>% 
       filter(!is.na(donations)) %>% 
       filter(measure == "pmp") %>% 
