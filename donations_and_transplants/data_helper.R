@@ -1,4 +1,5 @@
 library(fs)
+library(gt)
 library(janitor)
 library(tidyverse)
 
@@ -8,7 +9,7 @@ library(tidyverse)
 
 # Works in the app
 
-file_list <- dir_ls("../../transplant_data")
+file_list <- dir_ls("./transplant_data")
 
 raw_transplants <- map_dfr(file_list, 
                            read_csv, 
@@ -48,5 +49,4 @@ organs <- c("Kidney" = "kidney",
             "Liver" = "liver",
             "Pancreas" = "pancreas",
             "Heart" = "heart",
-            "Lung" = "lung",
-            "Heart/Lung" = "heart/lung")
+            "Lung" = "lung")

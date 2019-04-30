@@ -27,10 +27,10 @@ ui <- fluidPage(theme = shinytheme("slate"),
   # Tabs contain different page layout
   tabsetPanel(
     type = "tabs",
-    tabPanel("Plot",
+    tabPanel("Transplant Rates Across Countries",
              # Sidebar with inputs for plot
              sidebarLayout(
-               mainPanel(plotOutput("donationsPlot")),
+               mainPanel(plotOutput("transplantsPlot")),
                sidebarPanel(
                  selectInput(
                    inputId = "country",
@@ -56,6 +56,20 @@ ui <- fluidPage(theme = shinytheme("slate"),
                  )
                )
              )),
+    tabPanel("Transplant Proportions",
+             # Sidebar with inputs for plot
+             sidebarLayout(
+               mainPanel(gt_output("transplantsTable")),
+               sidebarPanel(
+                 selectInput(
+                   inputId = "country",
+                   label = "Country",
+                   choices = countries,
+                   selected = "US",
+                   multiple = FALSE
+                 )
+               )
+             )),
     tabPanel("Summary", "Taco"),
     tabPanel("About", "Tuesday")
   )
@@ -64,7 +78,7 @@ ui <- fluidPage(theme = shinytheme("slate"),
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   
-  output$donationsPlot <- renderPlot({
+  output$transplantsPlot <- renderPlot({
     req(input$country)
     
     all_transplants %>% 
@@ -77,7 +91,6 @@ server <- function(input, output) {
       labs(
         x = "Year",
         y = paste("Transplants (", input$measure, ")", sep = ""),
-        #title = (length(input$country) == 1),
         color = "Country",
         title = paste(toTitleCase(input$organ),
                       " Transplant Trends in ",
@@ -86,6 +99,47 @@ server <- function(input, output) {
                       sep = ""),
         caption = "Source: IRODaT Free Database") +
       theme_economist()
+  })
+  
+  output$transplantsTable <- render_gt({
+    req(input$country)
+    
+    transplant_table <- all_transplants %>% 
+      filter(country == "US") %>% 
+      filter(measure == "num") %>% 
+      spread(key = organ, value = transplants)
+    
+    transplant_table[is.na(transplant_table)] <- 0
+    
+    transplant_table %>% 
+      mutate(total = heart + kidney + liver + lung + pancreas) %>% 
+      mutate(heart = heart / total) %>% 
+      mutate(kidney = kidney / total) %>% 
+      mutate(liver = liver / total) %>% 
+      mutate(lung = lung / total) %>% 
+      mutate(pancreas = pancreas / total) %>% 
+      select(-country, -measure, -total) %>% 
+      na_if(0) %>% 
+      arrange(desc(year)) %>% 
+      gt() %>% 
+      #Set title
+      tab_header(title = paste("Transplant Proportions in ", input$country)) %>% 
+      #Label columns
+      cols_label(
+        year = "Year",
+        heart = "Heart",
+        kidney = "Kidney",
+        liver = "Liver",
+        lung = "Lung",
+        pancreas = "Pancreas"
+      ) %>%
+      #Format proportions as percentages
+      fmt_percent(columns = vars(heart,
+                                 kidney,
+                                 liver,
+                                 lung,
+                                 pancreas),
+                  decimals = 0)
   })
   
 }
