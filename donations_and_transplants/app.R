@@ -132,7 +132,7 @@ ui <- fluidPage(theme = shinytheme("slate"),
                  )
                )
              )),
-    tabPanel("About", "Tuesday")
+    tabPanel("Acknowledgments", htmlOutput("acknowledgments"))
   )
 )
 
@@ -231,10 +231,22 @@ server <- function(input, output) {
       )
   })
   
-  output$about <- renderUI({
+  output$acknowledgments <- renderUI({
     
-    ###
+    paragraph1 <- p(tags$strong("Organ Donations and Transplants"),
+                    "was a project created for Gov 1005: Data, a course taught by David Kane at Harvard College. The syllabus for the course can be found ",
+                    tags$a(href="https://www.davidkane.info/files/gov_1005_spring_2019.html", "here."),
+                    "I want to thank Preceptor, Albert Rivero, and Jacob Brown for all their help and guidance throughout the semester.", sep = "")
     
+    paragraph2 <- p("This website was produced using Shiny for R. Many thanks to the folks at RStudio for all the work they do to support the R community.")
+    
+    paragraph3 <- p("The data for this project was gathered the International Registry for Organ Donations and Transplants. Without their generously provided free database, the data for all the visualizations shown here would have been impossible to gather. The IRODaT website can be found",
+                    tags$a(href="http://www.irodat.org/", "here."))
+    
+    HTML(paste(br(),
+               paragraph1,
+               paragraph2,
+               paragraph3))
   })
   
 }
