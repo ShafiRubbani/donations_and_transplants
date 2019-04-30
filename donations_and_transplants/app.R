@@ -149,6 +149,7 @@ server <- function(input, output) {
       filter(country %in% input$country1) %>% 
       ggplot(aes(x = year, y = donations, color = country)) +
       geom_point() +
+      scale_x_continuous(breaks = seq(1993, 2018, by = 2)) +
       labs(
         x = "Year",
         y = paste("Donations (", input$measure1, ")", sep = ""),
@@ -171,6 +172,7 @@ server <- function(input, output) {
       filter(country %in% input$country2) %>% 
       ggplot(aes(x = year, y = transplants, color = country)) +
       geom_point() +
+      scale_x_continuous(breaks = seq(1993, 2018, by = 2)) +
       labs(
         x = "Year",
         y = paste("Transplants (", input$measure, ")", sep = ""),
