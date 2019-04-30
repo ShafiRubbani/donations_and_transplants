@@ -36,7 +36,9 @@ ui <- fluidPage(theme = shinytheme("slate"),
   
   tabsetPanel(
     type = "tabs",
-    tabPanel("Summary", "Taco"),
+    tabPanel("Summary", mainPanel(
+      helpText("The following countries had the highest donation rates (per million people) in 2017."),
+      gt_output("top10donations"))),
     tabPanel("Donation Rates Across Countries",
              
              # Sidebar with inputs for plot
@@ -50,6 +52,7 @@ ui <- fluidPage(theme = shinytheme("slate"),
                # Inputs: country or countries, organ, and measure (absolute number vs. per million people)
                
                sidebarPanel(
+                 helpText("Select Actual to see the number people donated their organs after death, Utilized to see the number of donations that were used, and Living to see the number of living donations."),
                  selectInput(
                    inputId = "country1",
                    label = "Country",
@@ -89,6 +92,7 @@ ui <- fluidPage(theme = shinytheme("slate"),
                # Inputs: country or countries, organ, and measure (absolute number vs. per million people)
                
                sidebarPanel(
+                 helpText("Use the dropdown menus to see transplant rates by organ and compare rates across countries."),
                  selectInput(
                    inputId = "country2",
                    label = "Country",
@@ -123,6 +127,7 @@ ui <- fluidPage(theme = shinytheme("slate"),
                
                mainPanel(gt_output("transplantsTable")),
                sidebarPanel(
+                 helpText("The table shows the proportion of transplants by organ in recent years."),
                  selectInput(
                    inputId = "country3",
                    label = "Country",
@@ -138,6 +143,29 @@ ui <- fluidPage(theme = shinytheme("slate"),
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+  
+  output$top10donations <- renderTable({
+    all_donations %>% 
+      filter(!is.na(donations)) %>% 
+      filter(measure == "pmp") %>% 
+      filter(type == "actual") %>% 
+      filter(year == 2017) %>% 
+      arrange(desc(donations)) %>% 
+      head(10) %>% 
+      select(country, donations) %>% 
+      gt() %>% 
+      #Set title
+      tab_header(title = "Top 10 Donation Rates (Per Million People) in 2017") %>% 
+      #Label columns
+      cols_label(
+        country = "Country",
+        donations = "Donation Rate"
+      ) %>%
+      tab_source_note("Source: IRODaT Free Database") %>% 
+      tab_options(
+        table.background.color = "#D5E5EB"
+      )
+  })
   
   output$donationsPlot <- renderPlot({
     req(input$country1)
