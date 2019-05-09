@@ -52,7 +52,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                # Inputs: country or countries, organ, and measure (absolute number vs. per million people)
                
                sidebarPanel(
-                 helpText("Select Actual to see the number people donated their organs after death, Utilized to see the number of donations that were used, and Living to see the number of living donations."),
+                 helpText("Select Actual to count donations after death, Utilized to count donations that were used, and Living to count living donations."),
                  selectInput(
                    inputId = "country1",
                    label = "Country",
@@ -92,7 +92,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                # Inputs: country or countries, organ, and measure (absolute number vs. per million people)
                
                sidebarPanel(
-                 helpText("Use the dropdown menus to see transplant rates by organ and compare rates across countries."),
+                 helpText("Use the dropdown menus to observe transplant rates by organ and compare rates across countries."),
                  selectInput(
                    inputId = "country2",
                    label = "Country",
@@ -127,7 +127,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                
                mainPanel(gt_output("transplantsTable")),
                sidebarPanel(
-                 helpText("The table shows the proportion of transplants by organ in recent years."),
+                 helpText("The table shows organ transplant proportions in recent years."),
                  selectInput(
                    inputId = "country3",
                    label = "Country",
