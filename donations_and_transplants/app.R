@@ -56,7 +56,7 @@ ui <- fluidPage(theme = shinytheme("slate"),
                  selectInput(
                    inputId = "country1",
                    label = "Country",
-                   choices = countries,
+                   choices = named_countries,
                    selected = "US",
                    multiple = TRUE
                  ),
@@ -96,7 +96,7 @@ ui <- fluidPage(theme = shinytheme("slate"),
                  selectInput(
                    inputId = "country2",
                    label = "Country",
-                   choices = countries,
+                   choices = named_countries,
                    selected = "US",
                    multiple = TRUE
                  ),
@@ -131,7 +131,7 @@ ui <- fluidPage(theme = shinytheme("slate"),
                  selectInput(
                    inputId = "country3",
                    label = "Country",
-                   choices = countries,
+                   choices = named_countries,
                    selected = "US",
                    multiple = FALSE
                  )

@@ -1,5 +1,6 @@
 # Install relevant libraries
 
+library(readr)
 library(fs)
 library(janitor)
 library(tidyverse)
@@ -48,6 +49,8 @@ raw_transplants <- map_dfr(transplant_list,
                              donor_status = col_character()
                            ))
 
+# Clean data
+
 all_donations <- raw_donations %>% 
   
   # Fixed duplication bug
@@ -93,6 +96,17 @@ countries <- all_transplants %>%
   distinct(country) %>% 
   select(country) %>% 
   unlist(use.names = FALSE)
+
+named_countries <- read_csv("country_codes.csv",
+                   # read_csv("./donations_and_transplants/country_codes.csv",
+                            col_names = c("code", "name"),
+                            col_types = cols(
+                              code = col_character(),
+                              name = col_character()
+                            )) %>% 
+  filter(code %in% countries) %>% 
+  spread(key = name, value = code) %>% 
+  unlist(use.names = TRUE)
 
 # Created a vector of organ types for use in dropdown menus
 
