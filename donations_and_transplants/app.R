@@ -24,7 +24,7 @@ source("data_helper.R")
 
 # Define UI with dark theme
 
-ui <- fluidPage(theme = shinytheme("slate"),
+ui <- fluidPage(theme = shinytheme("flatly"),
                 
   # Application title
   
@@ -152,19 +152,19 @@ server <- function(input, output) {
       filter(year == 2017) %>% 
       arrange(desc(donations)) %>% 
       head(10) %>% 
-      select(country, donations) %>% 
+      select(name, donations) %>% 
       gt() %>% 
       #Set title
       tab_header(title = "Top 10 Donation Rates (Per Million People) in 2017") %>% 
       #Label columns
       cols_label(
-        country = "Country",
+        name = "Country",
         donations = "Donation Rate"
       ) %>%
-      tab_source_note("Source: IRODaT Free Database") %>% 
-      tab_options(
-        table.background.color = "#D5E5EB"
-      )
+      tab_source_note("Source: IRODaT Free Database")
+      # tab_options(
+      #   table.background.color = "#D5E5EB"
+      # )
   })
   
   output$donationsPlot <- renderPlot({
@@ -183,11 +183,11 @@ server <- function(input, output) {
         y = paste("Donations (", input$measure1, ")", sep = ""),
         color = "Country",
         title = paste("Organ Donation Trends in ",
-                      if(length(input$country) == 1) {toupper(input$country)}
+                      if(length(input$country1) == 1) {toupper(input$country1)}
                       else {"Different Countries"},
                       sep = ""),
         caption = "Source: IRODaT Free Database") +
-      theme_economist()
+      theme_igray()
   })
   
   output$transplantsPlot <- renderPlot({
@@ -211,7 +211,7 @@ server <- function(input, output) {
                       else {"Different Countries"},
                       sep = ""),
         caption = "Source: IRODaT Free Database") +
-      theme_economist()
+      theme_igray()
   })
   
   output$transplantsTable <- render_gt({
@@ -231,7 +231,7 @@ server <- function(input, output) {
       mutate(liver = liver / total) %>% 
       mutate(lung = lung / total) %>% 
       mutate(pancreas = pancreas / total) %>% 
-      select(-country, -measure, -total) %>% 
+      select(-country, -measure, -total, -name) %>% 
       na_if(0) %>% 
       arrange(desc(year)) %>% 
       gt() %>% 
@@ -253,10 +253,7 @@ server <- function(input, output) {
                                  liver,
                                  lung,
                                  pancreas),
-                  decimals = 0) %>% 
-      tab_options(
-        table.background.color = "#D5E5EB"
-      )
+                  decimals = 0) 
   })
   
   output$acknowledgments <- renderUI({

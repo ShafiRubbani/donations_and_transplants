@@ -13,6 +13,14 @@ transplant_list <- dir_ls("./transplant_data")
 
 # Map the read_csv function over each list to get raw data with column specs
 
+all_named_countries <- read_csv("country_codes.csv",
+                            # read_csv("./donations_and_transplants/country_codes.csv",
+                            col_names = c("code", "name"),
+                            col_types = cols(
+                              code = col_character(),
+                              name = col_character()
+                            ))
+
 raw_donations <- map_dfr(donation_list, 
                            read_csv, 
                            .id = NULL,
@@ -65,7 +73,8 @@ all_donations <- raw_donations %>%
   
   # Parsed doubles as doubles
   
-  mutate(donations = parse_double(donations))
+  mutate(donations = parse_double(donations)) %>% 
+  left_join(all_named_countries, by = c("country" = "code"))
 
 all_transplants <- raw_transplants %>% 
   
@@ -87,7 +96,8 @@ all_transplants <- raw_transplants %>%
   # For transplant data, I decided not to distinguish between living and deceased donors
   
   summarize(transplants = sum(transplants)) %>% 
-  ungroup()
+  ungroup() %>% 
+  left_join(all_named_countries, by = c("country" = "code"))
 
 # In order to select only those countries with data, I took the country names
 # from the transplant database
@@ -97,13 +107,7 @@ countries <- all_transplants %>%
   select(country) %>% 
   unlist(use.names = FALSE)
 
-named_countries <- read_csv("country_codes.csv",
-                   # read_csv("./donations_and_transplants/country_codes.csv",
-                            col_names = c("code", "name"),
-                            col_types = cols(
-                              code = col_character(),
-                              name = col_character()
-                            )) %>% 
+named_countries <- all_named_countries %>% 
   filter(code %in% countries) %>% 
   spread(key = name, value = code) %>% 
   unlist(use.names = TRUE)
