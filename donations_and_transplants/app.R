@@ -37,8 +37,15 @@ ui <- fluidPage(theme = shinytheme("flatly"),
   tabsetPanel(
     type = "tabs",
     tabPanel("Summary", mainPanel(
-      helpText("The following countries had the highest donation rates (per million people) in 2017."),
-      gt_output("top5_donations"))),
+      # helpText("The following countries had the highest donation rates (per million people) in 2017."),
+      plotOutput("top5_donations"),
+      br(),
+      plotOutput("top5_transplants"),
+      br(),
+      gt_output("donations_change"),
+      br(),
+      gt_output("transplants_change")
+      )),
     tabPanel("Donation Rates Across Countries",
              
              # Sidebar with inputs for plot
@@ -144,27 +151,101 @@ ui <- fluidPage(theme = shinytheme("flatly"),
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   
-  output$top5_donations <- render_gt({
+  output$top5_donations <- renderPlot({
     all_donations %>% 
       filter(!is.na(donations)) %>% 
       filter(measure == "pmp") %>% 
       filter(type == "actual") %>% 
       filter(year == 2017) %>% 
       arrange(desc(donations)) %>% 
+      mutate(name = fct_reorder(name, donations)) %>% 
       head(5) %>% 
-      select(name, donations) %>% 
-      gt() %>% 
+      ggplot(aes(x = name, y = donations, fill = name)) +
+      geom_col(show.legend = FALSE) +
+      labs(
+        x = "Country",
+        y = "Donations (pmp)",
+        fill = "Country",
+        title = paste("Top 5 Donation Rates in 2017"),
+        caption = "Source: IRODaT Free Database") +
+      theme_igray()
+  })
+  
+  output$top5_transplants <- renderPlot({
+    all_transplants %>% 
+      filter(!is.na(transplants)) %>% 
+      filter(measure == "pmp") %>% 
+      filter(year == 2017) %>% 
+      group_by(country, name) %>% 
+      summarize(transplants = sum(transplants)) %>% 
+      ungroup() %>% 
+      arrange(desc(transplants)) %>% 
+      mutate(name = fct_reorder(name, transplants)) %>% 
+      head(5) %>% 
+      ggplot(aes(x = name, y = transplants, fill = name)) +
+      geom_col(show.legend = FALSE) +
+      labs(
+        x = "Country",
+        y = "Transplants (pmp)",
+        fill = "Country",
+        title = paste("Top 5 Transplant Rates in 2017"),
+        caption = "Source: IRODaT Free Database") +
+      theme_igray()
+  })
+  
+  output$donations_change <- render_gt({
+    all_donations %>% 
+      filter(type == "actual") %>% 
+      filter(measure == "pmp") %>% 
+      filter(year %in% c(2012, 2017)) %>% 
+      spread(key = year, value = donations) %>% 
+      filter(!is.na(`2012`)) %>% 
+      filter(!is.na(`2017`)) %>% 
+      mutate(change = `2017` - `2012`) %>% 
+      select(-type, -measure, -donor_status) %>% 
+      arrange(desc(change)) %>% 
+      head(5) %>%
+      select(-country) %>%
+      gt() %>%
       #Set title
-      tab_header(title = "Top 5 Donation Rates (Per Million People) in 2017") %>% 
+      tab_header(title = "Largest Donation Rate Increases (pmp) 2012 to 2017") %>%
       #Label columns
       cols_label(
         name = "Country",
-        donations = "Donation Rate"
+        `2012` = "Donation Rate 2012",
+        `2017` = "Donation Rate 2017",
+        change = "Difference"
       ) %>%
       tab_source_note("Source: IRODaT Free Database")
-      # tab_options(
-      #   table.background.color = "#D5E5EB"
-      # )
+  })
+  
+  output$transplants_change <- render_gt({
+    all_transplants %>% 
+      filter(!is.na(transplants)) %>% 
+      filter(measure == "pmp") %>% 
+      filter(year %in% c(2012, 2017)) %>% 
+      group_by(country, year, name) %>% 
+      summarize(transplants = sum(transplants)) %>% 
+      ungroup() %>% 
+      mutate(name = fct_reorder(name, transplants)) %>% 
+      spread(key = year, value = transplants) %>% 
+      filter(!is.na(`2012`)) %>% 
+      filter(!is.na(`2017`)) %>% 
+      mutate(change = `2017` - `2012`) %>% 
+      arrange(desc(change)) %>% 
+      head(5) %>% 
+      select(-country) %>%
+      gt() %>%
+      #Set title
+      tab_header(title = "Largest Transplant Rate Increases (pmp) 2012 to 2017") %>%
+      #Label columns
+      cols_label(
+        name = "Country",
+        `2012` = "Transplant Rate 2012",
+        `2017` = "Transplant Rate 2017",
+        change = "Difference"
+      ) %>%
+      tab_source_note("Source: IRODaT Free Database")
   })
   
   output$donationsPlot <- renderPlot({
