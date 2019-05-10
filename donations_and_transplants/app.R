@@ -38,7 +38,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
     type = "tabs",
     tabPanel("Summary", mainPanel(
       helpText("The following countries had the highest donation rates (per million people) in 2017."),
-      gt_output("top10donations"))),
+      gt_output("top5_donations"))),
     tabPanel("Donation Rates Across Countries",
              
              # Sidebar with inputs for plot
@@ -144,18 +144,18 @@ ui <- fluidPage(theme = shinytheme("flatly"),
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   
-  output$top10donations <- render_gt({
+  output$top5_donations <- render_gt({
     all_donations %>% 
       filter(!is.na(donations)) %>% 
       filter(measure == "pmp") %>% 
       filter(type == "actual") %>% 
       filter(year == 2017) %>% 
       arrange(desc(donations)) %>% 
-      head(10) %>% 
+      head(5) %>% 
       select(name, donations) %>% 
       gt() %>% 
       #Set title
-      tab_header(title = "Top 10 Donation Rates (Per Million People) in 2017") %>% 
+      tab_header(title = "Top 5 Donation Rates (Per Million People) in 2017") %>% 
       #Label columns
       cols_label(
         name = "Country",
@@ -203,7 +203,7 @@ server <- function(input, output) {
       scale_x_continuous(breaks = seq(1993, 2018, by = 2)) +
       labs(
         x = "Year",
-        y = paste("Transplants (", input$measure, ")", sep = ""),
+        y = paste("Transplants (", input$measure2, ")", sep = ""),
         color = "Country",
         title = paste(toTitleCase(input$organ),
                       " Transplant Trends in ",

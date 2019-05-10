@@ -99,6 +99,45 @@ all_transplants <- raw_transplants %>%
   ungroup() %>% 
   left_join(all_named_countries, by = c("country" = "code"))
 
+all_transplants %>% 
+  filter(!is.na(transplants)) %>% 
+  filter(measure == "pmp") %>% 
+  filter(year == 2017) %>% 
+  group_by(country, name) %>% 
+  summarize(transplants = sum(transplants)) %>% 
+  ungroup() %>% 
+  arrange(desc(transplants)) %>% 
+  mutate(name = fct_reorder(name, transplants)) %>% 
+  head(5) %>% 
+  ggplot(aes(x = name, y = transplants, fill = country)) +
+  geom_col()
+
+top5_change <- all_donations %>% 
+  filter(type == "actual") %>% 
+  filter(measure == "pmp") %>% 
+  filter(year %in% c(2012, 2017)) %>% 
+  # group_by(country) %>%
+  spread(key = year, value = donations) %>% 
+  filter(!is.na(`2012`)) %>% 
+  filter(!is.na(`2017`)) %>% 
+  mutate(change = `2017` - `2012`) %>% 
+  select(-type, -measure, -donor_status) %>% 
+  arrange(desc(change)) %>% 
+  head(10)
+
+bottom10_change <- all_donations %>% 
+  filter(type == "actual") %>% 
+  filter(measure == "pmp") %>% 
+  filter(year %in% c(2012, 2017)) %>% 
+  # group_by(country) %>%
+  spread(key = year, value = donations) %>% 
+  filter(!is.na(`2012`)) %>% 
+  filter(!is.na(`2017`)) %>% 
+  mutate(change = `2017` - `2012`) %>% 
+  select(-type, -measure, -donor_status) %>% 
+  arrange(change) %>% 
+  head(10)
+
 # In order to select only those countries with data, I took the country names
 # from the transplant database
 
