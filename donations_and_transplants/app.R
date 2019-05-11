@@ -7,7 +7,7 @@
 #    http://shiny.rstudio.com/
 #
 
-# Download relevant library
+# Load relevant libraries
 
 library(shiny)
 library(shinythemes)
@@ -22,7 +22,7 @@ library(tidyverse)
 
 source("data_helper.R")
 
-# Define UI with dark theme
+# Define UI with flatly theme
 
 ui <- fluidPage(theme = shinytheme("flatly"),
                 
@@ -30,12 +30,18 @@ ui <- fluidPage(theme = shinytheme("flatly"),
   
   titlePanel("Organ Donations and Transplants"),
   
+  # A subtitle containing identifying information
+  
   helpText("A Gov 1005 Final Project by Shafi Rubbani, Spring 2019"),
   
-  # Tabs contain different page layout
+  # Tabs contain different page layouts
   
   tabsetPanel(
     type = "tabs",
+    
+    # The summary panel contains plots and tables giving snapshots of the
+    # international organ donation and transplantation scene
+    
     tabPanel("Summary", mainPanel(
       # helpText("The following countries had the highest donation rates (per million people) in 2017."),
       plotOutput("top5_donations"),
@@ -46,17 +52,21 @@ ui <- fluidPage(theme = shinytheme("flatly"),
       br(),
       gt_output("transplants_change")
       )),
+    
+    # The donation rates panel contains a plot showing organ donation trends over
+    # time. By selecting multiple countries, users can compare donation trends.
+    
     tabPanel("Donation Rates Across Countries",
              
              # Sidebar with inputs for plot
              
              sidebarLayout(
                
-               # Display transplants plot
+               # Display donations plot
                
                mainPanel(plotOutput("donationsPlot")),
                
-               # Inputs: country or countries, organ, and measure (absolute number vs. per million people)
+               # Inputs: country or countries, donation type, and measure (absolute number vs. per million people)
                
                sidebarPanel(
                  helpText("Select Actual to count donations after death, Utilized to count donations that were used, and Living to count living donations."),
@@ -86,6 +96,10 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                  )
                )
              )),
+    
+    # The transplant rates panel contains a plot showing transplant trends over
+    # time. By selecting multiple countries, users can compare transplant trends.
+    
     tabPanel("Transplant Rates Across Countries",
              
              # Sidebar with inputs for plot
@@ -124,6 +138,10 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                  )
                )
              )),
+    
+    # The proportions tab enables users to look at a breakdown of transplant
+    # proportions in recent years.
+    
     tabPanel("Transplant Proportions",
              
              # Sidebar with inputs for plot
@@ -133,6 +151,9 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                # Display transplants table
                
                mainPanel(gt_output("transplantsTable")),
+               
+               # Inputs: country
+               
                sidebarPanel(
                  helpText("The table shows organ transplant proportions in recent years."),
                  selectInput(
@@ -349,10 +370,14 @@ server <- function(input, output) {
     paragraph3 <- p("The data for this project was gathered the International Registry for Organ Donations and Transplants. Without their generously provided free database, the data for all the visualizations shown here would have been impossible to gather. The IRODaT website can be found",
                     tags$a(href="http://www.irodat.org/", "here."))
     
+    paragraph4 <- p("The code behind these visualizations can be found in ",
+                    tags$a(href="https://github.com/ShafiRubbani/donations_and_transplants", "this GitHub repository."))
+    
     HTML(paste(br(),
                paragraph1,
                paragraph2,
-               paragraph3))
+               paragraph3,
+               paragraph4))
   })
   
 }
